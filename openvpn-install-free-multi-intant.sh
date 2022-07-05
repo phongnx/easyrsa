@@ -1198,24 +1198,23 @@ WantedBy=multi-user.target" >/etc/systemd/system/iptables-openvpn.service
 
   # client-template.txt is created so we have a template to add further users later
   echo "client" >/etc/openvpn/client-template.txt
-  if [[ $PROTOCOL == 'udp' ]]; then
-    echo "proto udp" >>/etc/openvpn/client-template.txt
-    echo "explicit-exit-notify" >>/etc/openvpn/client-template.txt
-  elif [[ $PROTOCOL == 'tcp' ]]; then
-    echo "proto tcp-client" >>/etc/openvpn/client-template.txt
-  fi
-  echo "remote $IP $PORT
-remote $IP 80
-remote $IP 443
-remote $IP 22
-remote $IP 53
-remote $IP 67
-remote $IP 68
-remote $IP 123
+  echo "<connection>
+remote $IP 1194 udp
+explicit-exit-notify
+</connection>
+<connection>
+remote $IP 443 tcp-client
+</connection>
+<connection>
+remote $IP 1412 udp
+explicit-exit-notify
+</connection>
 dev tun
 resolv-retry 15
 connect-retry 5 30
 connect-retry-max 3
+reneg-sec 0
+pull
 nobind
 persist-key
 persist-tun
@@ -1227,6 +1226,7 @@ cipher $CIPHER
 tls-client
 tls-version-min 1.2
 tls-cipher $CC_CIPHER
+comp-lzo
 ignore-unknown-option block-outside-dns
 setenv opt block-outside-dns # Prevent Windows 10 DNS leak
 verb 3" >>/etc/openvpn/client-template.txt
@@ -1308,54 +1308,22 @@ client-disconnect /etc/openvpn/tc.sh" >>/etc/openvpn/server.conf
     #status /var/log/openvpn/status.log
     #log-append /var/log/openvpn/vpn.log
     #server-ipv6 fd42:42:42:42::/112
-    sed "s/port 1194/port 80/g" /etc/openvpn/server.conf >/etc/openvpn/server2.conf
+    sed "s/port 1194/port 443/g" /etc/openvpn/server.conf >/etc/openvpn/server2.conf
+    sed -i "s/proto udp/proto tcp/g" /etc/openvpn/server2.conf
     sed -i "s/management localhost 6666/management localhost 6667/g" /etc/openvpn/server2.conf
     sed -i "s/server 10.8.0.0 255.255.255.0/server 10.7.0.0 255.255.255.0/g" /etc/openvpn/server2.conf
-    sed -i "s/status.log/status80.log/g" /etc/openvpn/server2.conf
-    sed -i "s/vpn.log/vpn80.log/g" /etc/openvpn/server2.conf
+    sed -i "s/status.log/status443.log/g" /etc/openvpn/server2.conf
+    sed -i "s/vpn.log/vpn443.log/g" /etc/openvpn/server2.conf
 
-    sed "s/port 1194/port 443/g" /etc/openvpn/server.conf >/etc/openvpn/server3.conf
+    sed "s/port 1194/port 1412/g" /etc/openvpn/server.conf >/etc/openvpn/server3.conf
     sed -i "s/management localhost 6666/management localhost 6668/g" /etc/openvpn/server3.conf
     sed -i "s/server 10.8.0.0 255.255.255.0/server 10.6.0.0 255.255.255.0/g" /etc/openvpn/server3.conf
-    sed -i "s/status.log/status443.log/g" /etc/openvpn/server3.conf
-    sed -i "s/vpn.log/vpn443.log/g" /etc/openvpn/server3.conf
+    sed -i "s/status.log/status1412.log/g" /etc/openvpn/server3.conf
+    sed -i "s/vpn.log/vpn1412.log/g" /etc/openvpn/server3.conf
 
-    sed "s/port 1194/port 22/g" /etc/openvpn/server.conf >/etc/openvpn/server4.conf
-    sed -i "s/management localhost 6666/management localhost 6669/g" /etc/openvpn/server4.conf
-    sed -i "s/server 10.8.0.0 255.255.255.0/server 10.5.0.0 255.255.255.0/g" /etc/openvpn/server4.conf
-    sed -i "s/status.log/status22.log/g" /etc/openvpn/server4.conf
-    sed -i "s/vpn.log/vpn22.log/g" /etc/openvpn/server4.conf
-
-    sed "s/port 1194/port 54/g" /etc/openvpn/server.conf >/etc/openvpn/server5.conf
-    sed -i "s/management localhost 6666/management localhost 6670/g" /etc/openvpn/server5.conf
-    sed -i "s/server 10.8.0.0 255.255.255.0/server 10.4.0.0 255.255.255.0/g" /etc/openvpn/server5.conf
-    sed -i "s/status.log/status54.log/g" /etc/openvpn/server5.conf
-    sed -i "s/vpn.log/vpn54.log/g" /etc/openvpn/server5.conf
-
-    sed "s/port 1194/port 67/g" /etc/openvpn/server.conf >/etc/openvpn/server6.conf
-    sed -i "s/management localhost 6666/management localhost 6671/g" /etc/openvpn/server6.conf
-    sed -i "s/server 10.8.0.0 255.255.255.0/server 10.3.0.0 255.255.255.0/g" /etc/openvpn/server6.conf
-    sed -i "s/status.log/status67.log/g" /etc/openvpn/server6.conf
-    sed -i "s/vpn.log/vpn64.log/g" /etc/openvpn/server6.conf
-
-    sed "s/port 1194/port 68/g" /etc/openvpn/server.conf >/etc/openvpn/server7.conf
-    sed -i "s/management localhost 6666/management localhost 6672/g" /etc/openvpn/server7.conf
-    sed -i "s/status.log/status68.log/g" /etc/openvpn/server7.conf
-    sed -i "s/vpn.log/vpn68.log/g" /etc/openvpn/server7.conf
-
-    sed "s/port 1194/port 123/g" /etc/openvpn/server.conf >/etc/openvpn/server8.conf
-    sed -i "s/management localhost 6666/management localhost 6673/g" /etc/openvpn/server8.conf
-    sed -i "s/server 10.8.0.0 255.255.255.0/server 10.1.0.0 255.255.255.0/g" /etc/openvpn/server8.conf
-    sed -i "s/status.log/status123.log/g" /etc/openvpn/server8.conf
-    sed -i "s/vpn.log/vpn123.log/g" /etc/openvpn/server8.conf
     if [[ $IPV6_SUPPORT == 'y' ]]; then
       sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:41/g" /etc/openvpn/server2.conf
       sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:40/g" /etc/openvpn/server3.conf
-      sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:39/g" /etc/openvpn/server4.conf
-      sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:38/g" /etc/openvpn/server5.conf
-      sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:37/g" /etc/openvpn/server6.conf
-      sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:36/g" /etc/openvpn/server7.conf
-      sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:35/g" /etc/openvpn/server8.conf
     fi
     # Finally, restart and enable OpenVPN
     if [[ $OS == 'arch' || $OS == 'fedora' || $OS == 'centos' || $OS == 'oracle' ]]; then
@@ -1375,21 +1343,6 @@ client-disconnect /etc/openvpn/tc.sh" >>/etc/openvpn/server.conf
       systemctl enable openvpn@server3
       systemctl stop openvpn@server3
       systemctl start openvpn@server3
-      systemctl enable openvpn@server4
-      systemctl stop openvpn@server4
-      systemctl start openvpn@server4
-      systemctl enable openvpn@server5
-      systemctl stop openvpn@server5
-      systemctl start openvpn@server5
-      systemctl enable openvpn@server6
-      systemctl stop openvpn@server6
-      systemctl start openvpn@server6
-      systemctl enable openvpn@server7
-      systemctl stop openvpn@server7
-      systemctl start openvpn@server7
-      systemctl enable openvpn@server8
-      systemctl stop openvpn@server8
-      systemctl start openvpn@server8
     fi
     cd
     wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/api-install.sh -O api-install.sh
