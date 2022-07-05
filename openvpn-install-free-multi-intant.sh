@@ -1299,7 +1299,8 @@ print(var.text)" >>/etc/openvpn/pushInfoToMainSv.py
     echo 'root ALL=(ALL) NOPASSWD: /etc/openvpn/resetvpn.sh' | sudo EDITOR='tee -a' visudo
     echo 'root ALL=(ALL) NOPASSWD: /etc/openvpn/turnoffvpn.sh' | sudo EDITOR='tee -a' visudo
     echo 'root ALL=(ALL) NOPASSWD: /etc/openvpn/turnonvpn.sh' | sudo EDITOR='tee -a' visudo
-    echo "script-security 3
+    echo "comp-lzo
+script-security 3
 down-pre
 up /etc/openvpn/tc.sh
 down /etc/openvpn/tc.sh
