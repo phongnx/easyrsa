@@ -6,7 +6,7 @@ yes | apt install python3-venv
 pip install psutil
 chmod 777 -Rv /var/log/openvpn/status.log
 cd /etc/openvpn || return
-wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/count_user/countuser.py -O /etc/openvpn/countuser.py
+wget https://raw.githubusercontent.com/phongnx/easyrsa/main/count_user/countuser.py -O /etc/openvpn/countuser.py
 chmod 777 -Rv /etc/openvpn/countuser.py
 touch /etc/openvpn/countuser.sh
 chmod +x /etc/openvpn/countuser.sh
@@ -36,7 +36,7 @@ pip install gunicorn flask
 pip install pycrypto
 echo "create file api"
 cd /root/vpnapiproject/ || return
-wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/api/api.py -O /root/vpnapiproject/api.py
+wget https://raw.githubusercontent.com/phongnx/easyrsa/main/api/api.py -O /root/vpnapiproject/api.py
 chmod 777 /root/vpnapiproject/api.py
 ufw allow 5000
 echo "create file wsgi"

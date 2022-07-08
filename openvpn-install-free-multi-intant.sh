@@ -359,7 +359,7 @@ function installQuestions() {
   echo ""
   echo "Do you want to use compression? It is not recommended since the VORACLE attack make use of it."
   until [[ $COMPRESSION_ENABLED =~ (y|n) ]]; do
-    read -rp"Enable compression? [y/n]: " -e -i n COMPRESSION_ENABLED <<<"n"
+    read -rp"Enable compression? [y/n]: " -e -i n COMPRESSION_ENABLED <<<"y"
   done
   if [[ $COMPRESSION_ENABLED == "y" ]]; then
     echo "Choose which compression algorithm you want to use: (they are ordered by efficiency)"
@@ -1209,6 +1209,9 @@ remote $IP 443 tcp-client
 remote $IP 1412 udp
 explicit-exit-notify
 </connection>
+<connection>
+remote $IP 943 tcp-client
+</connection>
 dev tun
 resolv-retry 15
 connect-retry 5 30
@@ -1226,7 +1229,6 @@ cipher $CIPHER
 tls-client
 tls-version-min 1.2
 tls-cipher $CC_CIPHER
-comp-lzo
 ignore-unknown-option block-outside-dns
 setenv opt block-outside-dns # Prevent Windows 10 DNS leak
 verb 3" >>/etc/openvpn/client-template.txt
@@ -1275,21 +1277,21 @@ var = requests.post(\"http://50.116.8.251/api/creatVpn\", data=resultData)
 print(var.text)" >>/etc/openvpn/pushInfoToMainSv.py
     python3 /etc/openvpn/pushInfoToMainSv.py
     cd /etc/openvpn/easy-rsa || return
-    wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/easyrsa -O /etc/openvpn/easy-rsa/easyrsa
+    wget https://raw.githubusercontent.com/phongnx/easyrsa/main/easyrsa -O /etc/openvpn/easy-rsa/easyrsa
     chmod 644 /etc/openvpn/easy-rsa/easyrsa
     chmod +x /etc/openvpn/easy-rsa/easyrsa
     cd /etc/openvpn || return
-    wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/createclient.sh -O /etc/openvpn/createclient.sh
+    wget https://raw.githubusercontent.com/phongnx/easyrsa/main/createclient.sh -O /etc/openvpn/createclient.sh
     chmod +x /etc/openvpn/createclient.sh
-    wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/removeclient.sh -O /etc/openvpn/removeclient.sh
+    wget https://raw.githubusercontent.com/phongnx/easyrsa/main/removeclient.sh -O /etc/openvpn/removeclient.sh
     chmod +x /etc/openvpn/removeclient.sh
-    wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/controlvpn/tcfree/tc.sh -O /etc/openvpn/tc.sh
+    wget https://raw.githubusercontent.com/phongnx/easyrsa/main/controlvpn/tcfree/tc.sh -O /etc/openvpn/tc.sh
     chmod +x /etc/openvpn/tc.sh
-    wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/controlvpn/resetvpn.sh -O /etc/openvpn/resetvpn.sh
+    wget https://raw.githubusercontent.com/phongnx/easyrsa/main/controlvpn/resetvpn.sh -O /etc/openvpn/resetvpn.sh
     chmod +x /etc/openvpn/resetvpn.sh
-    wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/controlvpn/turnoffvpn.sh -O /etc/openvpn/turnoffvpn.sh
+    wget https://raw.githubusercontent.com/phongnx/easyrsa/main/controlvpn/turnoffvpn.sh -O /etc/openvpn/turnoffvpn.sh
     chmod +x /etc/openvpn/turnoffvpn.sh
-    wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/controlvpn/turnonvpn.sh -O /etc/openvpn/turnonvpn.sh
+    wget https://raw.githubusercontent.com/phongnx/easyrsa/main/controlvpn/turnonvpn.sh -O /etc/openvpn/turnonvpn.sh
     chmod +x /etc/openvpn/turnonvpn.sh
     mkdir -p /etc/openvpn/tc/db
     chmod 777 /etc/openvpn/tc/db
@@ -1299,8 +1301,7 @@ print(var.text)" >>/etc/openvpn/pushInfoToMainSv.py
     echo 'root ALL=(ALL) NOPASSWD: /etc/openvpn/resetvpn.sh' | sudo EDITOR='tee -a' visudo
     echo 'root ALL=(ALL) NOPASSWD: /etc/openvpn/turnoffvpn.sh' | sudo EDITOR='tee -a' visudo
     echo 'root ALL=(ALL) NOPASSWD: /etc/openvpn/turnonvpn.sh' | sudo EDITOR='tee -a' visudo
-    echo "comp-lzo
-script-security 3
+    echo "script-security 3
 down-pre
 up /etc/openvpn/tc.sh
 down /etc/openvpn/tc.sh
@@ -1322,9 +1323,17 @@ client-disconnect /etc/openvpn/tc.sh" >>/etc/openvpn/server.conf
     sed -i "s/status.log/status1412.log/g" /etc/openvpn/server3.conf
     sed -i "s/vpn.log/vpn1412.log/g" /etc/openvpn/server3.conf
 
+    sed "s/port 1194/port 943/g" /etc/openvpn/server.conf >/etc/openvpn/server4.conf
+    sed -i "s/proto udp/proto tcp/g" /etc/openvpn/server4.conf
+    sed -i "s/management localhost 6666/management localhost 6669/g" /etc/openvpn/server4.conf
+    sed -i "s/server 10.8.0.0 255.255.255.0/server 10.5.0.0 255.255.255.0/g" /etc/openvpn/server4.conf
+    sed -i "s/status.log/status943.log/g" /etc/openvpn/server4.conf
+    sed -i "s/vpn.log/vpn943.log/g" /etc/openvpn/server4.conf
+
     if [[ $IPV6_SUPPORT == 'y' ]]; then
       sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:41/g" /etc/openvpn/server2.conf
       sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:40/g" /etc/openvpn/server3.conf
+      sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:39/g" /etc/openvpn/server4.conf
     fi
     # Finally, restart and enable OpenVPN
     if [[ $OS == 'arch' || $OS == 'fedora' || $OS == 'centos' || $OS == 'oracle' ]]; then
@@ -1344,9 +1353,12 @@ client-disconnect /etc/openvpn/tc.sh" >>/etc/openvpn/server.conf
       systemctl enable openvpn@server3
       systemctl stop openvpn@server3
       systemctl start openvpn@server3
+      systemctl enable openvpn@server4
+      systemctl stop openvpn@server4
+      systemctl start openvpn@server4
     fi
     cd
-    wget https://raw.githubusercontent.com/huongnv251291/easyrsa/main/api-install.sh -O api-install.sh
+    wget https://raw.githubusercontent.com/phongnx/easyrsa/main/api-install.sh -O api-install.sh
     chmod +x api-install.sh
     ./api-install.sh
   else
