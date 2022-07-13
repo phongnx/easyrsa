@@ -359,7 +359,7 @@ function installQuestions() {
   echo ""
   echo "Do you want to use compression? It is not recommended since the VORACLE attack make use of it."
   until [[ $COMPRESSION_ENABLED =~ (y|n) ]]; do
-    read -rp"Enable compression? [y/n]: " -e -i n COMPRESSION_ENABLED <<<"y"
+    read -rp"Enable compression? [y/n]: " -e -i n COMPRESSION_ENABLED <<<"n"
   done
   if [[ $COMPRESSION_ENABLED == "y" ]]; then
     echo "Choose which compression algorithm you want to use: (they are ordered by efficiency)"
@@ -901,7 +901,7 @@ client-config-dir /etc/openvpn/ccd
 status /var/log/openvpn/status.log
 log-append /var/log/openvpn/vpn.log
 management localhost 6666
-verb 4" >>/etc/openvpn/server.conf
+verb 5" >>/etc/openvpn/server.conf
 
   # Create client-config-dir dir
   mkdir -p /etc/openvpn/ccd
