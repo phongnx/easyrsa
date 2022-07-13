@@ -107,8 +107,8 @@ function bwlimit-enable() {
   #    downrate=1mbit
   #    uprate=1mbit
   #  else
-  downrate=1mbit
-  uprate=1mbit
+  downrate=2mbit
+  uprate=2mbit
   #  fi
 
   # Limit traffic from VPN server to client
