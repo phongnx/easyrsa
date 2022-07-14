@@ -1030,12 +1030,6 @@ WantedBy=multi-user.target" >/etc/systemd/system/iptables-openvpn.service
 
   # client-template.txt is created so we have a template to add further users later
   echo "client" >/etc/openvpn/client-template.txt
-  if [[ $PROTOCOL == 'udp' ]]; then
-    echo "proto udp" >>/etc/openvpn/client-template.txt
-    echo "explicit-exit-notify" >>/etc/openvpn/client-template.txt
-  elif [[ $PROTOCOL == 'tcp' ]]; then
-    echo "proto tcp-client" >>/etc/openvpn/client-template.txt
-  fi
   echo "<connection>
 remote $IP 1194 udp
 explicit-exit-notify
