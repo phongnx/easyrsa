@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import glob
 import json
 import re
 from threading import Thread
@@ -47,17 +48,25 @@ class CountUser:
         requests.post("http://50.116.8.251/api/creatVpn", data=result_data)
 
     def print_time(self):
-        fd = open("/var/log/openvpn/status.log", "r")
-        b = 0
-        for lines in fd:
-            if re.match("ROUTING TABLE", lines):
-                b = b - 3
-                if b != self.last_user:
-                    self.last_user = b
-                self.update_new_infor(b, 1)
-                break
-            else:
-                b = b + 1
+        directory = "/var/log/openvpn"
+        connections = 0
+        server_running = 0
+        for file_name in os.listdir(directory):
+            if file_name.startswith("status"):
+                log_file = open(os.path.join(directory, file_name), "r")
+                for lines in log_file:
+                    if re.match("ROUTING TABLE", lines):
+                        # trừ đi 3 lines đầu tiên
+                        connections = connections - 3
+                        # Set lại biến last_user
+                        if connections != self.last_user:
+                            self.last_user = connections
+                        # Đánh dấu là dịch vụ vẫn đang chạy
+                        server_running = 1
+                        break
+                    else:
+                        connections = connections + 1
+        self.update_new_infor(connections, server_running)
 
     def get_cpu(self):
         self.cpu = psutil.cpu_percent(4.5)
