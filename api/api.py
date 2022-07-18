@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
+import os
 import subprocess
 import telnetlib
 import base64
-import random
 
 from Crypto.Cipher import AES
-from Crypto import Random
 from flask import Flask, abort, jsonify
 from flask import request
 
@@ -17,7 +16,6 @@ unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 keyEncrypt = '757CBB5C17489F3A040D646FD7267CC2'
 ivEncrypt = '1234567890ABCDEF'
 host = "localhost"
-port = 6666
 
 
 def pad(text):
@@ -70,7 +68,7 @@ def index():
 
 
 @app.route('/v1.0/tasks/createprofile', methods=['POST'])
-def createprofile():
+def create_profile():
     if not request.json or not 'profilename' in request.json:
         abort(400)
     name_profile = request.json['profilename']
@@ -102,30 +100,32 @@ def createprofile():
 
 
 @app.route('/v1.0/tasks/killprofile', methods=['POST'])
-def killprofile():
+def kill_profile():
     if not request.json or not 'profilename' in request.json:
         abort(400)
     name_profile = request.json['profilename']
     print(name_profile)
-    telnet = telnetlib.Telnet(host, port, 5)
-    command = "kill " + name_profile + enter
-    print(command)
-    telnet.write(command.encode("ascii"))
-    outputs = telnet.expect(["killed\r".encode("ascii"), "not found\r".encode("ascii")], 1)
-    output = outputs[len(outputs) - 1]
-    list_value = output.split(enter.encode("ascii"))
-    strreturn = str(list_value[len(list_value) - 1])
-    print(strreturn)
-    telnet.close()
-    jsondata = {
-        'code': 200,
-        'msg': strreturn
-    }
+    ports = get_port_opened()
+    for port in ports:
+        telnet = telnetlib.Telnet(host, port, 5)
+        command = "kill " + name_profile + enter
+        print(command)
+        telnet.write(command.encode("ascii"))
+        outputs = telnet.expect(["killed\r".encode("ascii"), "not found\r".encode("ascii")], 1)
+        output = outputs[len(outputs) - 1]
+        list_value = output.split(enter.encode("ascii"))
+        strreturn = str(list_value[len(list_value) - 1])
+        print(strreturn)
+        telnet.close()
+        jsondata = {
+            'code': 200,
+            'msg': strreturn
+        }
     return jsonify(jsondata)
 
 
 @app.route('/v1.0/tasks/removeprofile', methods=['POST'])
-def removeprofile():
+def remove_profile():
     if not request.json or not 'profilename' in request.json:
         abort(400)
     name_profile = request.json['profilename']
@@ -144,11 +144,11 @@ def removeprofile():
 
 
 @app.route('/v1.0/tasks/controlvpn', methods=['POST'])
-def resetvpn():
+def reset_vpn():
     if not request.json or not 'action' in request.json:
         abort(400)
     action = request.json['action']
-    var = actionvpn(action)
+    var = action_vpn(action)
     if len(var) == 0:
         jsondata = {
             'code': 300,
@@ -167,7 +167,7 @@ def resetvpn():
     return jsonify(jsondata)
 
 
-def actionvpn(action):
+def action_vpn(action):
     print("actionvpn : " + str(action))
     if action == 0:
         return subprocess.run(['/etc/openvpn/resetvpn.sh'], stdout=subprocess.PIPE).stdout
@@ -183,10 +183,11 @@ def actionvpn(action):
     # }.get(action, "")
 
 
-def makejsonuser(line):
+def make_json_user(line, port):
     datas = line.split(",")
+    name = datas[1] + ":" + str(port)
     return {
-        'Common_Name': datas[1],
+        'Common_Name': name,
         'Real_Address': datas[2],
         'Virtual_Address': datas[3],
         'Virtual_IPv6_Address': datas[4],
@@ -197,35 +198,53 @@ def makejsonuser(line):
         'Username': datas[9],
         'Client_ID': datas[10],
         'Peer_ID': datas[11],
+        'Port': port,
     }
 
+def get_port_opened():
+    directory = "/etc/openvpn"
+    ports = []
+    for file_name in os.listdir(directory):
+        file = os.path.join(directory, file_name)
+        if os.path.isfile(file) and file_name.startswith("server") and file_name.endswith(".conf"):
+            content = open(file, "r")
+            for line in content:
+                if line.startswith("management localhost"):
+                    port_opened = line.split("management localhost")[1].replace(" ", "")
+                    print("port_opened " + port_opened)
+                    ports.append(int(port_opened))
+    return ports
 
 @app.route('/v1.0/tasks/listuseronline', methods=['GET'])
-def getlistuseronline():
+def get_list_user_online():
     try:
-        telnet = telnetlib.Telnet(host, port, 5)
-        command = "status 2" + enter
-        telnet.write(command.encode("ascii"))
-        outputs = telnet.expect(["END\r".encode("ascii")], 1)
-        output = outputs[len(outputs) - 1]
-        list_value = output.split(enter.encode("ascii"))
-        listuser = []
-        for i in list_value:
-            line = str(i).split("\'")[1].replace("\\r", "")
-            print(line)
-            if line.startswith("CLIENT_LIST,"):
-                listuser.append(makejsonuser(line))
-            if line.startswith("HEADER,ROUTING_TABLE,"):
-                break
+        connections = []
+        ports = get_port_opened()
+        for port in ports:
+            telnet = telnetlib.Telnet(host, port, 5)
+            command = "status 2" + enter
+            telnet.write(command.encode("ascii"))
+            outputs = telnet.expect(["END\r".encode("ascii")], 1)
+            output = outputs[len(outputs) - 1]
+            list_value = output.split(enter.encode("ascii"))
+            for i in list_value:
+                line = str(i).split("\'")[1].replace("\\r", "")
+                print(line)
+                if line.startswith("CLIENT_LIST,"):
+                    connections.append(make_json_user(line, port))
+                if line.startswith("HEADER,ROUTING_TABLE,"):
+                    break
         profile = {
             'code': 0,
             'message': "OK",
-            'data': listuser
+            'data': connections
         }
-    except:
+    except Exception as e:
+        print(e)
         profile = {
             'code': 0,
             'message': "Error when get list user maybe server not available contact to admin for support",
+            'Exception': str(e),
             'data': []
         }
     return jsonify(profile)

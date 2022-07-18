@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import glob
 import json
 import re
 from threading import Thread
@@ -25,7 +24,7 @@ class CountUser:
             if lines.startswith("max-clients"):
                 self.max_current_connection = lines.split()[1]
 
-    def push_new_vpn_to_dash_broad(self, b, isserverrunning):
+    def push_new_vpn_to_dash_broad(self, b, is_server_running):
         self.read_config()
         r = requests.get("https://ipinfo.io/json")
         data_from_ip_info = json.loads(r.text)
@@ -42,20 +41,20 @@ class CountUser:
             'vpn_type': self.vpn_type,
             'cpu': self.cpu,
             'ram': self.ram,
-            'status_vpn': isserverrunning
+            'status_vpn': is_server_running
         }
         print(result_data)
         requests.post("http://50.116.8.251/api/creatVpn", data=result_data)
 
-    def print_time(self):
+    def get_info(self):
         directory = "/var/log/openvpn"
         connections = 0
         server_running = 0
         for file_name in os.listdir(directory):
             if file_name.startswith("status"):
-                log_file = open(os.path.join(directory, file_name), "r")
-                for lines in log_file:
-                    if re.match("ROUTING TABLE", lines):
+                content = open(os.path.join(directory, file_name), "r")
+                for line in content:
+                    if re.match("ROUTING TABLE", line):
                         # trừ đi 3 lines đầu tiên
                         connections = connections - 3
                         # Set lại biến last_user
@@ -81,7 +80,7 @@ class CountUser:
             # file = Path("/var/log/openvpn/status.log")
             # if file.is_file():
             try:
-                self.print_time()
+                self.get_info()
                 # status = os.system('systemctl is-active openvpn@server')
                 # if status == 0:
                 #     self.print_time()
@@ -92,22 +91,22 @@ class CountUser:
         # else:
         #     break
 
-    def update_new_infor(self, b, isserverrunning):
+    def update_new_infor(self, connections, is_server_running):
         r = requests.get("https://api.ipify.org")
         name = r.text.replace(".", "")
         pload = {
             'id': name,
-            'current_connection': b,
+            'current_connection': connections,
             'cpu': self.cpu,
             'ram': self.ram,
-            'status_vpn': isserverrunning
+            'status_vpn': is_server_running
         }
         path = "http://50.116.8.251/api/updateNumberConnect"
         data = requests.post(path, data=pload)
         data_from_ip_info = json.loads(data.text)
         error = data_from_ip_info["code"]
         if error == 201:
-            self.push_new_vpn_to_dash_broad(b, isserverrunning)
+            self.push_new_vpn_to_dash_broad(connections, is_server_running)
         else:
             print(data_from_ip_info)
 
