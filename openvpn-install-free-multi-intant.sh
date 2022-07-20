@@ -780,6 +780,11 @@ persist-key
 persist-tun
 keepalive 10 120
 topology subnet
+mssfix 0
+tun-mtu 9000
+txqueuelen 15000
+sndbuf 512000
+rcvbuf 512000
 server 10.8.0.0 255.255.255.0
 ifconfig-pool-persist ipp.txt" >>/etc/openvpn/server.conf
 
@@ -1201,6 +1206,7 @@ WantedBy=multi-user.target" >/etc/systemd/system/iptables-openvpn.service
   echo "<connection>
 remote $IP 1194 udp
 explicit-exit-notify 2
+fast-io
 </connection>
 <connection>
 remote $IP 443 tcp-client
@@ -1208,6 +1214,7 @@ remote $IP 443 tcp-client
 <connection>
 remote $IP 1412 udp
 explicit-exit-notify 2
+fast-io
 </connection>
 <connection>
 remote $IP 943 tcp-client
@@ -1309,25 +1316,41 @@ client-disconnect /etc/openvpn/tc.sh" >>/etc/openvpn/server.conf
     #status /var/log/openvpn/status.log
     #log-append /var/log/openvpn/vpn.log
     #server-ipv6 fd42:42:42:42::/112
+    # config 2 : TCP 443
     sed "s/port 1194/port 443/g" /etc/openvpn/server.conf >/etc/openvpn/server2.conf
-    sed -i "s/proto udp/proto tcp-server/g" /etc/openvpn/server2.conf
+    echo "tcp-nodelay
+    tcp-queue-limit 256" >>/etc/openvpn/server2.conf
+    if [[ $IPV6_SUPPORT == 'y' ]]; then
+       sed -i "s/proto udp6/proto tcp-server/g" /etc/openvpn/server2.conf
+    else
+      sed -i "s/proto udp/proto tcp-server/g" /etc/openvpn/server2.conf
+    fi
     sed -i "s/management localhost 6666/management localhost 6667/g" /etc/openvpn/server2.conf
     sed -i "s/server 10.8.0.0 255.255.255.0/server 10.7.0.0 255.255.255.0/g" /etc/openvpn/server2.conf
     sed -i "s/status.log/status443.log/g" /etc/openvpn/server2.conf
     sed -i "s/vpn.log/vpn443.log/g" /etc/openvpn/server2.conf
-
+    # config 3 : UDP 1412
     sed "s/port 1194/port 1412/g" /etc/openvpn/server.conf >/etc/openvpn/server3.conf
+    echo "fast-io" >>/etc/openvpn/server3.conf
     sed -i "s/management localhost 6666/management localhost 6668/g" /etc/openvpn/server3.conf
     sed -i "s/server 10.8.0.0 255.255.255.0/server 10.6.0.0 255.255.255.0/g" /etc/openvpn/server3.conf
     sed -i "s/status.log/status1412.log/g" /etc/openvpn/server3.conf
     sed -i "s/vpn.log/vpn1412.log/g" /etc/openvpn/server3.conf
-
+    # config 4 : TCP 943
     sed "s/port 1194/port 943/g" /etc/openvpn/server.conf >/etc/openvpn/server4.conf
-    sed -i "s/proto udp/proto tcp-server/g" /etc/openvpn/server4.conf
+    echo "tcp-nodelay
+    tcp-queue-limit 256" >>/etc/openvpn/server4.conf
+    if [[ $IPV6_SUPPORT == 'y' ]]; then
+      sed -i "s/proto udp6/proto tcp-server/g" /etc/openvpn/server4.conf
+    else
+      sed -i "s/proto udp/proto tcp-server/g" /etc/openvpn/server4.conf
+    fi
     sed -i "s/management localhost 6666/management localhost 6669/g" /etc/openvpn/server4.conf
     sed -i "s/server 10.8.0.0 255.255.255.0/server 10.5.0.0 255.255.255.0/g" /etc/openvpn/server4.conf
     sed -i "s/status.log/status943.log/g" /etc/openvpn/server4.conf
     sed -i "s/vpn.log/vpn943.log/g" /etc/openvpn/server4.conf
+    # config 1: UDP 1194
+    echo "fast-io" >>/etc/openvpn/server.conf
 
     if [[ $IPV6_SUPPORT == 'y' ]]; then
       sed -i "s/server-ipv6 fd42:42:42:42/server-ipv6 fd42:42:42:41/g" /etc/openvpn/server2.conf
