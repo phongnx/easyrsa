@@ -906,7 +906,7 @@ client-config-dir /etc/openvpn/ccd
 status /var/log/openvpn/status.log
 log-append /var/log/openvpn/vpn.log
 management localhost 6666
-verb 5" >>/etc/openvpn/server.conf
+verb 3" >>/etc/openvpn/server.conf
 
   # Create client-config-dir dir
   mkdir -p /etc/openvpn/ccd
@@ -1206,7 +1206,6 @@ WantedBy=multi-user.target" >/etc/systemd/system/iptables-openvpn.service
   echo "<connection>
 remote $IP 1194 udp
 explicit-exit-notify 2
-fast-io
 </connection>
 <connection>
 remote $IP 443 tcp-client
@@ -1214,7 +1213,6 @@ remote $IP 443 tcp-client
 <connection>
 remote $IP 1412 udp
 explicit-exit-notify 2
-fast-io
 </connection>
 <connection>
 remote $IP 943 tcp-client
