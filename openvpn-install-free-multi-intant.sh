@@ -392,7 +392,7 @@ function installQuestions() {
   done
   if [[ $CUSTOMIZE_ENC == "n" ]]; then
     # Use default, sane and fast parameters
-    CIPHER="AES-256-CBC:AES-256-GCM:AES-128-GCM"
+    CIPHER="AES-256-GCM"
     CERT_TYPE="1" # ECDSA
     CERT_CURVE="prime256v1"
     CC_CIPHER="TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256"
@@ -1021,7 +1021,26 @@ iptables -t nat -I POSTROUTING 1 -s 10.1.0.0/24 -o $NIC -j MASQUERADE
 iptables -I INPUT 1 -i tun0 -j ACCEPT
 iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
 iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 123 -j ACCEPT" >/etc/iptables/add-openvpn-rules.sh
+iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 123 -j ACCEPT
+
+
+iptables -A INPUT -p udp --dport 1194 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -p udp --dport 1412 -j ACCEPT
+iptables -A INPUT -p tcp --dport 943 -j ACCEPT
+
+iptables -A INPUT -i tun+ -j ACCEPT
+iptables -A FORWARD -i tun+ -j ACCEPT
+
+iptables -A OUTPUT -m state --state NEW -o eth0 -j ACCEPT
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -m state --state NEW -o eth0 -j ACCEPT
+iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 10.7.0.0/24 -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 10.6.0.0/24 -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 10.5.0.0/24 -o eth0 -j MASQUERADE" >/etc/iptables/add-openvpn-rules.sh
 
   if [[ $IPV6_SUPPORT == 'y' ]]; then
     echo "ip6tables -t nat -I POSTROUTING 1 -s fd42:42:42:42::/112 -o $NIC -j MASQUERADE
