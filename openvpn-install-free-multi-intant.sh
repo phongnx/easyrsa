@@ -367,7 +367,7 @@ function installQuestions() {
     echo "   2) LZ4"
     echo "   3) LZ0"
     until [[ $COMPRESSION_CHOICE =~ ^[1-3]$ ]]; do
-      read -rp"Compression algorithm [1-3]: " -e -i 1 COMPRESSION_CHOICE
+      read -rp"Compression algorithm [1-3]: " -e -i 1 COMPRESSION_CHOICE <<<"1"
     done
     case $COMPRESSION_CHOICE in
     1)
@@ -392,10 +392,10 @@ function installQuestions() {
   done
   if [[ $CUSTOMIZE_ENC == "n" ]]; then
     # Use default, sane and fast parameters
-    CIPHER="AES-128-GCM"
+    CIPHER="AES-256-CBC:AES-256-GCM:AES-128-GCM"
     CERT_TYPE="1" # ECDSA
     CERT_CURVE="prime256v1"
-    CC_CIPHER="TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256"
+    CC_CIPHER="TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256"
     DH_TYPE="1" # ECDH
     DH_CURVE="prime256v1"
     HMAC_ALG="SHA256"
@@ -1206,20 +1206,23 @@ WantedBy=multi-user.target" >/etc/systemd/system/iptables-openvpn.service
   echo "<connection>
 remote $IP 1194 udp
 explicit-exit-notify 2
+connect-retry-max 3
 </connection>
 <connection>
 remote $IP 443 tcp-client
+connect-retry-max 3
 </connection>
 <connection>
 remote $IP 1412 udp
 explicit-exit-notify 2
+connect-retry-max 3
 </connection>
 <connection>
 remote $IP 943 tcp-client
+connect-retry-max 3
 </connection>
 dev tun
 resolv-retry 15
-connect-retry-max 3
 reneg-sec 0
 pull
 nobind
@@ -1311,9 +1314,7 @@ up /etc/openvpn/tc.sh
 down /etc/openvpn/tc.sh
 client-connect /etc/openvpn/tc.sh
 client-disconnect /etc/openvpn/tc.sh" >>/etc/openvpn/server.conf
-    #status /var/log/openvpn/status.log
-    #log-append /var/log/openvpn/vpn.log
-    #server-ipv6 fd42:42:42:42::/112
+
     # config 2 : TCP 443
     sed "s/port 1194/port 443/g" /etc/openvpn/server.conf >/etc/openvpn/server2.conf
     echo "tcp-nodelay
