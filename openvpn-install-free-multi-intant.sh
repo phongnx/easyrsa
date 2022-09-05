@@ -993,37 +993,6 @@ iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
 iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
 iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 443 -j ACCEPT
 
-iptables -t nat -I POSTROUTING 1 -s 10.5.0.0/24 -o $NIC -j MASQUERADE
-iptables -I INPUT 1 -i tun0 -j ACCEPT
-iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 22 -j ACCEPT
-
-iptables -t nat -I POSTROUTING 1 -s 10.4.0.0/24 -o $NIC -j MASQUERADE
-iptables -I INPUT 1 -i tun0 -j ACCEPT
-iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 53 -j ACCEPT
-
-iptables -t nat -I POSTROUTING 1 -s 10.3.0.0/24 -o $NIC -j MASQUERADE
-iptables -I INPUT 1 -i tun0 -j ACCEPT
-iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 67 -j ACCEPT
-
-iptables -t nat -I POSTROUTING 1 -s 10.2.0.0/24 -o $NIC -j MASQUERADE
-iptables -I INPUT 1 -i tun0 -j ACCEPT
-iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 68 -j ACCEPT
-
-iptables -t nat -I POSTROUTING 1 -s 10.1.0.0/24 -o $NIC -j MASQUERADE
-iptables -I INPUT 1 -i tun0 -j ACCEPT
-iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 123 -j ACCEPT
-
-
 iptables -A INPUT -p udp --dport 1194 -j ACCEPT
 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
 iptables -A INPUT -p udp --dport 1412 -j ACCEPT
@@ -1059,37 +1028,7 @@ ip6tables -t nat -I POSTROUTING 1 -s fd42:42:42:40::/112 -o $NIC -j MASQUERADE
 ip6tables -I INPUT 1 -i tun0 -j ACCEPT
 ip6tables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
 ip6tables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-ip6tables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 443 -j ACCEPT
-
-ip6tables -t nat -I POSTROUTING 1 -s fd42:42:42:39::/112 -o $NIC -j MASQUERADE
-ip6tables -I INPUT 1 -i tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-ip6tables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 22 -j ACCEPT
-
-ip6tables -t nat -I POSTROUTING 1 -s fd42:42:42:38::/112 -o $NIC -j MASQUERADE
-ip6tables -I INPUT 1 -i tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-ip6tables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 53 -j ACCEPT
-
-ip6tables -t nat -I POSTROUTING 1 -s fd42:42:42:37::/112 -o $NIC -j MASQUERADE
-ip6tables -I INPUT 1 -i tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-ip6tables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 67 -j ACCEPT
-
-ip6tables -t nat -I POSTROUTING 1 -s fd42:42:42:36::/112 -o $NIC -j MASQUERADE
-ip6tables -I INPUT 1 -i tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-ip6tables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 68 -j ACCEPT
-
-ip6tables -t nat -I POSTROUTING 1 -s fd42:42:42:35::/112 -o $NIC -j MASQUERADE
-ip6tables -I INPUT 1 -i tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-ip6tables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 123 -j ACCEPT" >>/etc/iptables/add-openvpn-rules.sh
+ip6tables -I INPUT 1 -i $NIC -p $PROTOCOL --dport 443 -j ACCEPT" >>/etc/iptables/add-openvpn-rules.sh
   fi
 
   # Script to remove rules
@@ -1112,35 +1051,18 @@ iptables -D FORWARD -i $NIC -o tun0 -j ACCEPT
 iptables -D FORWARD -i tun0 -o $NIC -j ACCEPT
 iptables -D INPUT -i $NIC -p $PROTOCOL --dport 443 -j ACCEPT
 
-iptables -t nat -D POSTROUTING -s 10.5.0.0/24 -o $NIC -j MASQUERADE
-iptables -D INPUT -i tun0 -j ACCEPT
-iptables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-iptables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-iptables -D INPUT -i $NIC -p $PROTOCOL --dport 22 -j ACCEPT
+iptables -D INPUT -p udp --dport 1194 -j ACCEPT
+iptables -D INPUT -p tcp --dport 443 -j ACCEPT
+iptables -D INPUT -p udp --dport 1412 -j ACCEPT
+iptables -D INPUT -p tcp --dport 943 -j ACCEPT
 
-iptables -t nat -D POSTROUTING -s 10.4.0.0/24 -o $NIC -j MASQUERADE
-iptables -D INPUT -i tun0 -j ACCEPT
-iptables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-iptables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-iptables -D INPUT -i $NIC -p $PROTOCOL --dport 53 -j ACCEPT
+iptables -D INPUT -i tun+ -j ACCEPT
+iptables -D FORWARD -i tun+ -j ACCEPT
 
-iptables -t nat -D POSTROUTING -s 10.3.0.0/24 -o $NIC -j MASQUERADE
-iptables -D INPUT -i tun0 -j ACCEPT
-iptables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-iptables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-iptables -D INPUT -i $NIC -p $PROTOCOL --dport 67 -j ACCEPT
-
-iptables -t nat -D POSTROUTING -s 10.2.0.0/24 -o $NIC -j MASQUERADE
-iptables -D INPUT -i tun0 -j ACCEPT
-iptables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-iptables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-iptables -D INPUT -i $NIC -p $PROTOCOL --dport 68 -j ACCEPT
-
-iptables -t nat -D POSTROUTING -s 10.1.0.0/24 -o $NIC -j MASQUERADE
-iptables -D INPUT -i tun0 -j ACCEPT
-iptables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-iptables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-iptables -D INPUT -i $NIC -p $PROTOCOL --dport 123 -j ACCEPT" >/etc/iptables/rm-openvpn-rules.sh
+iptables -D OUTPUT -m state --state NEW -o eth0 -j ACCEPT
+iptables -D INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -D FORWARD -m state --state NEW -o eth0 -j ACCEPT
+iptables -D FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT" >/etc/iptables/rm-openvpn-rules.sh
 
   if [[ $IPV6_SUPPORT == 'y' ]]; then
     echo "ip6tables -t nat -D POSTROUTING -s fd42:42:42:42::/112 -o $NIC -j MASQUERADE
@@ -1159,37 +1081,7 @@ ip6tables -t nat -D POSTROUTING -s fd42:42:42:40::/112 -o $NIC -j MASQUERADE
 ip6tables -D INPUT -i tun0 -j ACCEPT
 ip6tables -D FORWARD -i $NIC -o tun0 -j ACCEPT
 ip6tables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-ip6tables -D INPUT -i $NIC -p $PROTOCOL --dport 443 -j ACCEPT
-
-ip6tables -t nat -D POSTROUTING -s fd42:42:42:39::/112 -o $NIC -j MASQUERADE
-ip6tables -D INPUT -i tun0 -j ACCEPT
-ip6tables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-ip6tables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-ip6tables -D INPUT -i $NIC -p $PROTOCOL --dport 22 -j ACCEPT
-
-ip6tables -t nat -D POSTROUTING -s fd42:42:42:38::/112 -o $NIC -j MASQUERADE
-ip6tables -D INPUT -i tun0 -j ACCEPT
-ip6tables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-ip6tables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-ip6tables -D INPUT -i $NIC -p $PROTOCOL --dport 53 -j ACCEPT
-
-ip6tables -t nat -D POSTROUTING -s fd42:42:42:37::/112 -o $NIC -j MASQUERADE
-ip6tables -D INPUT -i tun0 -j ACCEPT
-ip6tables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-ip6tables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-ip6tables -D INPUT -i $NIC -p $PROTOCOL --dport 67 -j ACCEPT
-
-ip6tables -t nat -D POSTROUTING -s fd42:42:42:36::/112 -o $NIC -j MASQUERADE
-ip6tables -D INPUT -i tun0 -j ACCEPT
-ip6tables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-ip6tables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-ip6tables -D INPUT -i $NIC -p $PROTOCOL --dport 68 -j ACCEPT
-
-ip6tables -t nat -D POSTROUTING -s fd42:42:42:35::/112 -o $NIC -j MASQUERADE
-ip6tables -D INPUT -i tun0 -j ACCEPT
-ip6tables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-ip6tables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-ip6tables -D INPUT -i $NIC -p $PROTOCOL --dport 123 -j ACCEPT" >>/etc/iptables/rm-openvpn-rules.sh
+ip6tables -D INPUT -i $NIC -p $PROTOCOL --dport 443 -j ACCEPT" >>/etc/iptables/rm-openvpn-rules.sh
   fi
 
   chmod +x /etc/iptables/add-openvpn-rules.sh
